@@ -1,7 +1,7 @@
 {
     "name": "didrive_api/jobdesc_oborot",
     "description": "jobdesc работа с оборотами",
-    "version": "0.0.2",
+    "version": "0.0.5",
     
     "keywords": [
         "didrive", "module", "nyos", "uralweb.info"
@@ -23,6 +23,12 @@
         "twig/twig": ">=2.10.0"
         ,
         "didrive_mod/jobdesc": ">=0.0.1"
+    }
+    ,
+    "autoload": {
+        "files": [
+            "class.php"
+        ]
     }
     
 }
