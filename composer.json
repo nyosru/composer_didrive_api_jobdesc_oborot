@@ -1,7 +1,7 @@
 {
     "name": "didrive_api/jobdesc_oborot",
-    "description": "jobdesc работа с оборотами",
-    "version": "0.0.6",
+    "description": "грузим обороты",
+    "version": "0.1.0",
     
     "keywords": [
         "didrive", "module", "nyos", "uralweb.info"
