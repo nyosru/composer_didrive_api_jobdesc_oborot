@@ -10,16 +10,15 @@
 /**
  * получаем средние значения ожидания с указанной даты по дату в точке продаж
  */
-if( isset($twig) ){
-    
-$function = new Twig_SimpleFunction('api_jobdesc_oborot__get', function ( $site, $module ) {
+if (isset($twig)) {
 
-    $r = \Nyos\api\ImportExport::getLocalDump($site, $module);
-    // \f\pa($r);
-    return $r;
+    $function = new Twig_SimpleFunction('api_jobdesc_oborot__get', function ( $site, $module ) {
 
-});
-$twig->addFunction($function);
+        $r = \Nyos\api\ImportExport::getLocalDump($site, $module);
+        // \f\pa($r);
+        return $r;
+    });
+    $twig->addFunction($function);
 
 }
 

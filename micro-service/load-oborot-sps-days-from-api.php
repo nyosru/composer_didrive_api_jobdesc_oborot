@@ -9,6 +9,18 @@ try {
     if (!isset($skip_start) || ( isset($skip_start) && $skip_start !== true ))
         require_once '0start.php';
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     foreach (\Nyos\Nyos::$menu as $k => $v) {
         if ($v['type'] == 'iiko_checks' && $v['version'] == 1) {
@@ -45,32 +57,33 @@ try {
 // получаем со всех точек обороты за последние 4 дня, перезаписываем значения если нет значения
 
     $sps = \Nyos\mod\items::get($db, \Nyos\mod\JobDesc::$mod_sale_point, 'show', 'id_id');
-    \f\pa($sps, 2);
+    if (isset($_REQUEST['show']) && $_REQUEST['show'] == 'da')
+        \f\pa($sps, 2);
 
-    $return_sp_date = \Nyos\api\JOBDESC_OBOROT::getNoData($db, 20);
-    \f\pa($return_sp_date, 2, '', 'чего не хватает');
-
-
-
+    $return_sp_date = \Nyos\api\JOBDESC_OBOROT::getNoData($db, ( $_REQUEST['day_scan'] ?? 20 ) );
+    if (isset($_REQUEST['show']) && $_REQUEST['show'] == 'da')
+        \f\pa($return_sp_date, 2, '', 'чего не хватает');
 
     $now_sp_date = [];
-    $dt = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600 * 24 * 20);
+    $dt = date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600 * 24 * ( $_REQUEST['day_scan'] ?? 20 ) );
 
     // \Nyos\mod\items::$show_sql = true;
     \Nyos\mod\items::$between['date'] = [$dt, date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600 * 24)];
     \Nyos\mod\items::$sql_select_vars = ['id', 'date', 'sale_point'];
     $list2 = \Nyos\mod\items::get($db, \Nyos\mod\JobDesc::$mod_oborots);
     // \f\pa($list, 2);
+    
     foreach ($list2 as $v) {
         $now_sp_date[$v['sale_point']][$v['date']] = $v['id'];
     }
-    \f\pa($now_sp_date, 2, '', '$now_sp_date');
-
-
+    
+    if (isset($_REQUEST['show']) && $_REQUEST['show'] == 'da')
+        \f\pa($now_sp_date, 2, '', '$now_sp_date');
 
     $adds = [];
 
     $edit_nn = 0;
+    $edit_nn2 = 0;
 
     foreach ($return_sp_date as $sp => $date0) {
 
@@ -104,7 +117,8 @@ try {
             // echo '<br/> sp ' . $sps[$sp]['head'] . ' d ' . $date;
 //            try {
             $res = require 'get-oborot-1sp.php';
-            \f\pa($res, 2, '', '$res');
+            if (isset($_REQUEST['show']) && $_REQUEST['show'] == 'da')
+                \f\pa($res, 2, '', '$res');
 
             // break;
 //            } catch (\Exception $ex) {
@@ -120,11 +134,17 @@ try {
                     // echo '<Br/>запись есть, редактируем ';
                     // \f\pa($now_sp_date[$sp][$date]);
 
-                    \Nyos\mod\items::edit($db, \Nyos\mod\JobDesc::$mod_oborots, ['id' => $now_sp_date[$sp][$date]], ['oborot_server' => $res['data']['oborot']]);
+                    if (!empty($res['data']['oborot'])) {
+                        $kolvo = \Nyos\mod\items::edit($db, \Nyos\mod\JobDesc::$mod_oborots, ['id' => $now_sp_date[$sp][$date]], ['oborot_server' => $res['data']['oborot']], 'kolvo');
+
+                        if (!empty($kolvo) && $kolvo > 0)
+                            $edit_nn2 += $kolvo;
+                    }
+                    
                 } else {
 
-                    // echo '<Br/>записи нет, добавляем';
                     if (isset($res['data']['oborot']) && is_numeric($res['data']['oborot'])) {
+                        // echo '<Br/>записи нет, добавляем';
                         $adds[] = [
                             'sale_point' => $sp,
                             'date' => $date,
@@ -137,8 +157,7 @@ try {
 //            echo '<hr>';
 //            echo '<hr>';
 //            echo '<hr>';
-
-            break;
+            // break;
         }
 
         // break;
@@ -154,8 +173,9 @@ try {
     if (1 == 1 && class_exists('\\Nyos\\Msg')) {
 
         $msg_txt = 'грузим обороты точкам'
+                . PHP_EOL . ' сканим '. ( $_REQUEST['day_scan'] ?? 20 ) .' суток'
                 . PHP_EOL . ' добавлено: ' . sizeof($adds)
-                . PHP_EOL . ' отредактировано: ' . $edit_nn;
+                . PHP_EOL . ' отредактировано: ' . $edit_nn . ' ( задето строк данных ' . $edit_nn2 . ' ) ';
 
 //        if (!isset($vv['admin_ajax_job'])) {
 //            require_once DR . '/sites/' . \Nyos\nyos::$folder_now . '/config.php';
